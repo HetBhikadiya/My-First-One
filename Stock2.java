@@ -12,18 +12,6 @@ class InvalidMonthException extends Exception {
     }
 }
 
-class InvalidPhoneNumberException extends Exception {
-    public InvalidPhoneNumberException(String message) {
-        super(message);
-    }
-}
-
-class InvalidEmailException extends Exception {
-    public InvalidEmailException(String message) {
-        super(message);
-    }
-}
-
 class InvalidPasswordException extends Exception {
     public InvalidPasswordException(String message) {
         super(message);
@@ -49,9 +37,8 @@ class Trade {
     static double currentPrize, currentPrize1, todayOpen;
     static boolean validYear=true;
 
-    void signup() throws InvalidNameException, InvalidDateException, 
-                         InvalidMonthException, InvalidPhoneNumberException, 
-                         InvalidEmailException, InvalidPasswordException {
+    void signup() throws InvalidDateException, 
+                         InvalidMonthException, InvalidPasswordException {
    
         boolean validName;
         System.out.print("Enter your name: ");
@@ -96,9 +83,11 @@ class Trade {
                 break;
             } catch (InputMismatchException e) {
                 sc.nextLine();
-                System.out.println("Month should be a valid number");
-                
+                System.out.println("Month should be a valid number");    
             }
+            catch (InvalidMonthException e) {
+				System.out.println(e.getMessage());
+			}
         }
         System.out.print("Enter your birth year: ");
         while(true){
@@ -115,36 +104,94 @@ class Trade {
             }             
             }
         System.out.println("Fill below details");
+        boolean b = true;
+        int i = 1;
         System.out.print("Enter your mobile number: ");
         sc.nextLine();
-        String num = sc.nextLine();
-        if (!num.matches("[6-9]\\d{9}")) {
-            throw new InvalidPhoneNumberException("Invalid mobile number! Should be 10 digits starting with 6-9");
-        }
+        do {
+            String num = sc.nextLine();
+            for (int j = 0; j < num.length(); j++) {
+                if (!(num.charAt(j) >= '0' && num.charAt(j) <= '9' && num.length() == 10 &&
+                        num.charAt(0) >= '6' && num.charAt(0) <= '9')) {
+                    b = true;
+                    System.out.println("Invalid! Try again.");
+                    if (i == 1) {
+                        System.out.println("You have 2 tries");
+                    } else if (i == 2) {
+                        System.out.println("You have 1 try.");
+                    } else {
+                        System.out.println("Try after 24 hours!");
+                        return;
+                    }
+                    i++;
+                    break;
+                } else {
+                    b = false;
+                }
+            }
+        } while (b && i <= 3);
 
-        // Email validation
+        boolean isValid;
         System.out.print("Enter your E-mail id: ");
-        email = sc.nextLine();
-        if (!email.matches("[a-zA-Z0-9._]+@gmail\\.com")) {
-            throw new InvalidEmailException("Invalid email format! Should be in format username@gmail.com");
-        }
+        do {
+            email = sc.nextLine();
+            isValid = true;
+            if (email.length() > 10 && email.endsWith("@gmail.com")) {
+                for (int j = 0; j < email.length() - 10; j++) {
+                    char e = email.charAt(j);
+                    if (!((e >= 'a' && e <= 'z') || (e >= 'A' && e <= 'Z') || (e >= '0' && e <= '9') || e == '.'
+                            || e == '_')) {
+                        isValid = false;
+                        break;
+                    }
+                }
+            } else {
+                isValid = false;
+            }
 
-        // Password validation
+            if (!isValid) {
+                System.out.println("Invalid email! Enter a correct email.");
+                System.out.print("Enter your E-mail id: ");
+            }
+        } while (!isValid);
+
         System.out.println("Enter a 4-digit password:");
-        password = sc.nextLine();
-        if (!password.matches("\\d{4}")) {
-            throw new InvalidPasswordException("Password should be exactly 4 digits");
+        boolean valid = false;
+        do {
+            try{
+            password = sc.nextLine();
+            valid = true;
+            if (password.length() == 4) {
+                for (int j = 0; j < password.length(); j++) {
+                    char ch = password.charAt(j);
+                    if (!(ch >= '0' && ch <= '9')) {
+                        valid = false;
+                        break;
+                    }
+                }
+            } else {
+                valid = false;
+            }
+            if (!valid)
+                throw new InvalidPasswordException("Enter Valid 4 digit password");
+        }catch (InvalidPasswordException e){
+                System.out.println(e.getMessage());
         }
+        } while (!valid);
     }
 
-    void login(String email, String password) throws InvalidEmailException, InvalidPasswordException{
+    void login(String email, String password) throws InvalidPasswordException{
         if(Trade.validYear==false)
             return;
-        System.out.println("Enter E-mail for login:");
-        String inputEmail = sc.next();
-        if (!inputEmail.equals(email)) {
-            throw new InvalidEmailException("Incorrect email");
-        }
+            while (true) {
+                System.out.println("Enter E-mail for login:");
+                String inputEmail = sc.next();
+                if (!inputEmail.equals(email)) {
+                    System.out.println("Enter correct Email");
+                } 
+                else
+                break;
+            }
 
         System.out.println("Enter Password:");
         for (int i = 1; i <= 3; i++) {
@@ -199,7 +246,7 @@ class Invest extends Trade {
                 throw new InvalidSharesException("Sorry! you can buy Maximum " + count + " Shares.");
             }
         } catch (InputMismatchException e) {
-            sc.nextLine(); // clear the invalid input
+            sc.nextLine();
             throw new InvalidSharesException("Please enter a valid number of shares");
         }
 
@@ -257,7 +304,7 @@ class Invest extends Trade {
                         b = false;
                     }
                 } catch (InputMismatchException e) {
-                    sc.nextLine(); // clear the invalid input
+                    sc.nextLine();
                     System.out.println("Please enter a valid number");
                 }
             }
@@ -314,7 +361,7 @@ class Invest extends Trade {
                 System.out.println("Invalid choice, returning to menu");
             }
         } catch (InputMismatchException e) {
-            sc.nextLine(); // clear the invalid input
+            sc.nextLine();
             System.out.println("Invalid input, please enter numbers only");
         }
     }
@@ -336,7 +383,7 @@ class StockMarket {
             yn = sc.next().charAt(0);
         } catch (Exception e) {
             System.out.println("Invalid input, please try again");
-            sc.nextLine(); // clear the invalid input
+            sc.nextLine();
             return;
         }
 
@@ -367,7 +414,7 @@ class StockMarket {
                             b = false;
                         } catch (InputMismatchException e) {
                             System.out.println("Please enter a valid amount");
-                            sc.nextLine(); // clear the invalid input
+                            sc.nextLine();
                         }
                     } else if (choice1 == 'N' || choice1 == 'n') {
                         b = false;
@@ -436,7 +483,7 @@ class StockMarket {
             }
         } catch (InputMismatchException e) {
             System.out.println("Please enter a valid number");
-            sc.nextLine(); // clear the invalid input
+            sc.nextLine();
         }
     }
 
@@ -475,9 +522,8 @@ class StockMarket {
         System.out.println("-------- Sign up --------");
         try {
             T.signup();
-        } catch (InvalidNameException | InvalidDateException | 
-                 InvalidMonthException | InvalidPhoneNumberException | 
-                 InvalidEmailException | InvalidPasswordException e) {
+        } catch (InvalidDateException | 
+                 InvalidMonthException | InvalidPasswordException e) {
             System.out.println( e.getMessage());
             return;
         }
@@ -489,7 +535,7 @@ class StockMarket {
         
         try {
             T.login(T.email, T.password);
-        } catch (InvalidEmailException | InvalidPasswordException  e) {
+        } catch (InvalidPasswordException  e) {
             System.out.println("Login failed: " + e.getMessage());
             return;
         }
@@ -512,7 +558,7 @@ class StockMarket {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Please enter a valid number");
-                sc.nextLine(); // clear the invalid input
+                sc.nextLine();
                 b = true;
             }
         } while (b);
@@ -562,7 +608,7 @@ class StockMarket {
                         System.out.println();
                     } catch (InputMismatchException e) {
                         System.out.println("Please enter a valid amount");
-                        sc.nextLine(); // clear the invalid input
+                        sc.nextLine();
                     }
                 } else if (choice >= 1 && choice <= 10) {
                     switch (choice) {
@@ -612,7 +658,7 @@ class StockMarket {
                 }
             } catch (InputMismatchException e) {
                 System.out.println("Please enter a valid number");
-                sc.nextLine(); // clear the invalid input
+                sc.nextLine();
             }
         }
     }
